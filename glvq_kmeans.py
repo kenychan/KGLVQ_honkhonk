@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.cluster import kmeans_plusplus
 from sklearn.datasets import make_blobs
 
-n_samples = 3
+n_samples = 30
 n_class = 3 #how many clusters to make , aka class numbers
 
 samples, labels = make_blobs(n_samples=n_samples,# X = returned generated samples, y = The integer labels for each generated sample.
