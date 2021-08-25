@@ -52,12 +52,11 @@ class Glvq:
 
 
 
-    #gaussian_kernelfunction
+  #gaussian_kernelfunction
     def gaussian_kernelfunction(self,xi,xj):
-        sigma = 0.1 #sigma range (0.1, 1.1))
-        dist = np.sum((xi-xj)**2,axis=0) #suqare eu 
-        return np.exp((-dist)/(2*(sigma**2)))
-
+        sigma = 0.1 #sigma should be changed to fit the data ,0.1
+        dist = np.linalg.norm(xi-xj)#euclidean distance
+        return np.exp((-(dist)**2)/2*(sigma**2))
         
   
 
