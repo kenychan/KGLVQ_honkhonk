@@ -79,63 +79,64 @@ class Glvq:
         self.kernel_matrix=newmatrix #save matrix to class data
         #locate the value through [i][j] , diagonal = 1
 
-    def feature_space_distance_forall_samples(self,prototype_number,samplesize): 
-        #calculate the distance between all samples and all prototypes, for initialization
+    def feature_space_distance_forall_samples(self,prototype_number,samplesize): #每个样本与每个p的距离
 
         distance_arr = []
+        
 
-        for p in range(0,prototype_number):  #from prototype to sample          
+        
+        for p in range(0,prototype_number):  #from prototype to sample    
             for index in range(0, samplesize):
                 part1 = self.kernel_matrix[index][index] #diagonal = 1
             
-                sum1 = 0
-                for i in range(0, samplesize):
-                    sum1 = sum1 + self.coefficient_vectors[p][i]*self.kernel_matrix[index][i]
+                part2 = (self.coefficient_vectors[p]*self.kernel_matrix[index]).sum()
 
-                part2 = sum1
+                weight_js= np.repeat(self.coefficient_vectors[p], samplesize)
+                weight_js = np.reshape(weight_js,(samplesize,samplesize))
+                weight_jt = np.tile(self.coefficient_vectors[p],samplesize)
+                weight_jt = np.reshape(weight_jt,(samplesize,samplesize))
+                part3 = np.sum(weight_js*weight_jt*self.kernel_matrix)
 
-                sum2 = 0
-                for s in range(0, samplesize):
-                    for t in range(0, samplesize):
-                        sum2 = sum2 + self.coefficient_vectors[p][s]*self.coefficient_vectors[p][t]*self.kernel_matrix[i][t]
-
-                part3 = sum2
 
                 distance =  part1 - (2*part2) + part3
                 distance_arr.append(distance)
         distance_arr = np.array(distance_arr)
         distance_arr = np.reshape(distance_arr,(prototype_number,samplesize))
-        distance_arr = np.transpose(distance_arr) # ret(samplesize, prototype_number)
+        distance_arr = np.transpose(distance_arr) # 3000x 12
 
         return distance_arr           
 
-    def feature_space_distance_for_singlesample(self,prototype_number,index,samplesize): 
-        #calculation the distance from a single sample to all prototypes  (saves tiem for sinple sample updates)
+    def feature_space_distance_for_singlesample(self,prototype_number,index,samplesize): #singel样本与每个p的距离
 
         distance_arr = []
 
-        for p in range(0,prototype_number):  #from prototype to sample          
-                part1 = self.kernel_matrix[index][index] #diagonal = 1
+        for p in range(0,prototype_number):  #from prototype to sample  
+
+            part1 = self.kernel_matrix[index][index] #diagonal = 1
             
-                sum1 = 0
-                for i in range(0, samplesize):
-                    sum1 = sum1 + self.coefficient_vectors[p][i]*self.kernel_matrix[index][i]
+            part2 = (self.coefficient_vectors[p]*self.kernel_matrix[index]).sum()
 
-                part2 = sum1
 
-                sum2 = 0
-                for s in range(0, samplesize):
-                    for t in range(0, samplesize):
-                        sum2 = sum2 + self.coefficient_vectors[p][s]*self.coefficient_vectors[p][t]*self.kernel_matrix[i][t]
 
-                part3 = sum2
+            #sum2 = 0 
+            #for s in range(0, 30):
+            #    for t in range(0, 30):
+            #        sum2 = sum2 + (self.coefficient_vectors[p][s]*self.coefficient_vectors[p][t]*self.kernel_matrix[s][t])
+            #相当于self.coefficient_vectors[p]作为第一竖行,每行重复N遍的matrix * self.coefficient_vectors[p]作为第一横行,重复N行的matrix * kernel matrix
+            weight_js= np.repeat(self.coefficient_vectors[p], samplesize)
+            weight_js = np.reshape(weight_js,(samplesize,samplesize))
+            weight_jt = np.tile(self.coefficient_vectors[p],samplesize)
+            weight_jt = np.reshape(weight_jt,(samplesize,samplesize))
+            part3 = np.sum(weight_js*weight_jt*self.kernel_matrix)
+            
+            distance =  part1 - (2*part2) + part3
 
-                distance =  part1 - (2*part2) + part3
-                distance_arr.append(distance)
+            distance_arr.append(distance)
+
         distance_arr = np.array(distance_arr)
 
 
-        return distance_arr           
+        return distance_arr            
 
 
 
@@ -304,14 +305,17 @@ class Glvq:
 
             plt.pause(0.1)
 
-        figName = 'KGLVQ_'+ str(samplesize) +'data_samples__'+ str(prototype_number)+'prototypes__' + str(i) + 'epochs' '.png'
-        plt.savefig('result/'+figName)
-        plt.show()#show last pic
+
         accuracy = np.count_nonzero(distance_plus < distance_minus) #Counts the number of non-zero values in the array 
         acc = accuracy / len(distance_plus) * 100 
    
         print("error number per epoch: ",error_count) 
         print("accuracy = {}".format(acc))
+        figName = 'KGLVQ_'+dataname+ '_'+ str(samplesize) +'data_samples__'+ str(prototype_number)+'prototypes__' + str(i) + 'epochs'+'_'+str(acc)+'accuracy.png'
+        plt.savefig('result/'+figName)
+        plt.show()#show last pic
+
+  
 
 
   
